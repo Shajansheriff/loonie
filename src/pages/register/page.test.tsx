@@ -14,7 +14,10 @@ vi.mock("@/api/methods/createProfileDetails", () => ({
 }));
 
 import { validateCorporationNumber } from "@/api/methods/validateCorporationNumber";
-import { createProfileDetails, type ProfileDetailsResponse } from "@/api/methods/createProfileDetails";
+import {
+  createProfileDetails,
+  type ProfileDetailsResponse,
+} from "@/api/methods/createProfileDetails";
 import { assertHtmlInputElement } from "@/test/helpers";
 
 const mockedValidateCorporationNumber = vi.mocked(validateCorporationNumber);
@@ -36,13 +39,10 @@ function createTestQueryClient() {
 function renderWithProviders(ui: React.ReactElement) {
   const queryClient = createTestQueryClient();
   return {
-    ...render(
-      <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
-    ),
+    ...render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
     queryClient,
   };
 }
-
 
 function getInputByLabelText(label: RegExp) {
   return screen.getByLabelText(label);
@@ -77,7 +77,7 @@ describe("RegisterPage", () => {
     renderWithProviders(<RegisterPage />);
 
     expect(getFirstNameInput()).toBeVisible();
-    expect(getFirstNameInput()).toBeEnabled();  
+    expect(getFirstNameInput()).toBeEnabled();
     expect(getLastNameInput()).toBeVisible();
     expect(getLastNameInput()).toBeEnabled();
     expect(getPhoneInput()).toBeVisible();
@@ -180,9 +180,7 @@ describe("RegisterPage", () => {
       expect(mockedValidateCorporationNumber).toHaveBeenCalledWith("123456789");
     });
     await waitFor(() => {
-      expect(
-        screen.getByText("Invalid corporation number")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Invalid corporation number")).toBeInTheDocument();
     });
   });
 
@@ -202,9 +200,7 @@ describe("RegisterPage", () => {
       expect(mockedValidateCorporationNumber).toHaveBeenCalledWith("123456789");
     });
     await waitFor(() => {
-      expect(
-        screen.queryByText("Invalid corporation number")
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Invalid corporation number")).not.toBeInTheDocument();
     });
   });
 
@@ -216,10 +212,9 @@ describe("RegisterPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
     const corpNumberInput = getCorporationNumberInput();
-  
+
     await user.type(corpNumberInput, "123456789");
     await user.tab();
-    
 
     await waitFor(() => {
       expect(mockedValidateCorporationNumber).toHaveBeenCalledWith("123456789");
@@ -249,7 +244,6 @@ describe("RegisterPage", () => {
     await waitFor(() => {
       expect(mockedValidateCorporationNumber).toHaveBeenCalledTimes(1);
     });
-
   });
 
   it("submits form with valid data", async () => {
@@ -288,7 +282,6 @@ describe("RegisterPage", () => {
   });
 
   it("disables submit button while submitting", async () => {
-    
     mockedValidateCorporationNumber.mockResolvedValue({
       corporationNumber: "123456789",
       valid: true,
@@ -302,11 +295,9 @@ describe("RegisterPage", () => {
           corporationNumber: "123456789",
           phone: "+11234567890",
         });
-      }, 200); 
+      }, 200);
     });
-    mockedCreateProfileDetails.mockImplementation(
-      () => submitPromise
-    );
+    mockedCreateProfileDetails.mockImplementation(() => submitPromise);
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
 
@@ -325,28 +316,22 @@ describe("RegisterPage", () => {
       expect(submitButton).toBeDisabled();
     });
 
-
     await waitFor(() => {
       expect(submitButton).not.toBeDisabled();
     });
   });
 
   it("handles API error during corporation number validation", async () => {
-    
     mockedValidateCorporationNumber.mockRejectedValue(new Error("API Error"));
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
     const corpNumberInput = getCorporationNumberInput();
 
-    
     await user.type(corpNumberInput, "123456789");
     await user.tab();
 
-    
     await waitFor(() => {
-      expect(
-        screen.getByText("Invalid corporation number")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Invalid corporation number")).toBeInTheDocument();
     });
   });
 });

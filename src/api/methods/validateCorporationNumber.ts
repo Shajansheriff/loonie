@@ -10,7 +10,9 @@ export type ValidateCorporationNumberResponse = z.infer<
   typeof validateCorporationNumberResponseSchema
 >;
 
-export const validateCorporationNumber = (corporationNumber: string): Promise<ValidateCorporationNumberResponse> => {
+export const validateCorporationNumber = (
+  corporationNumber: string
+): Promise<ValidateCorporationNumberResponse> => {
   return api.get(
     `corporation-number/${corporationNumber}`,
     validateCorporationNumberResponseSchema
