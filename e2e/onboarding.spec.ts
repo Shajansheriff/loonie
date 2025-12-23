@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+const API_BASE_URL = process.env.VITE_API_BASE_URL ?? "";
+
 test.describe("Onboarding Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
@@ -53,5 +55,109 @@ test.describe("Onboarding Page", () => {
     await page.getByLabel("First Name").focus(); // blur the field
 
     await expect(page.getByText("Must be 9 digits")).toBeVisible();
+  });
+
+  test("should display backend error message when submission fails with 400", async ({ page }) => {
+    
+    await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
+      });
+    });
+
+    
+    await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
+      await route.fulfill({
+        status: 400,
+        contentType: "application/json",
+        body: JSON.stringify({ message: "Invalid phone number" }),
+      });
+    });
+
+    
+    await page.getByLabel("First Name").fill("John");
+    await page.getByLabel("Last Name").fill("Doe");
+    await page.getByLabel("Phone Number").fill("+11234567890");
+    await page.getByLabel("Corporation Number").fill("123456789");
+    await page.getByLabel("First Name").focus(); // blur corporation number to trigger validation
+
+    // Wait for async validation to complete (checkmark appears)
+    await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
+
+    
+    await page.getByRole("button", { name: "Submit" }).click();
+
+    
+    await expect(page.getByRole("alert").filter({ hasText: "Invalid phone number" })).toBeVisible();
+  });
+
+  test("should submit form successfully with valid data", async ({ page }) => {
+    
+    await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
+      });
+    });
+
+    await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          firstName: "John",
+          lastName: "Doe",
+          corporationNumber: "12345678",
+          phone: "+11234567890",
+        }),
+      });
+    });
+
+    await page.getByLabel("First Name").fill("John");
+    await page.getByLabel("Last Name").fill("Doe");
+    await page.getByLabel("Phone Number").fill("+11234567890");
+    await page.getByLabel("Corporation Number").fill("123456789");
+    await page.getByLabel("First Name").focus(); // blur corporation number to trigger validation
+
+    
+    await expect(
+      page.locator("[data-slot='field-validation-status-valid']")
+    ).toBeVisible();
+
+    
+    await page.getByRole("button", { name: "Submit" }).click();
+
+    await expect(page.getByRole("alert")).toBeHidden();
+  });
+
+  test("should show validation indicator for corporation number during async validation", async ({
+    page,
+  }) => {
+    
+    await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
+      });
+    });
+
+    
+    await page.getByLabel("Corporation Number").fill("123456789");
+    await page.getByLabel("First Name").focus(); // blur to trigger validation
+
+    
+    await expect(
+      page.locator("[data-slot='field-validation-status-validating']")
+    ).toBeVisible();
+
+    
+    await expect(
+      page.locator("[data-slot='field-validation-status-valid']")
+    ).toBeVisible({ timeout: 3000 });
   });
 });

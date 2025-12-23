@@ -19,6 +19,7 @@ import {
   type ProfileDetailsResponse,
 } from "@/api/methods/createProfileDetails";
 import { assertHtmlInputElement } from "@/test/helpers";
+import { HttpError } from "@/api/client";
 
 const mockedValidateCorporationNumber = vi.mocked(validateCorporationNumber);
 const mockedCreateProfileDetails = vi.mocked(createProfileDetails);
@@ -338,6 +339,102 @@ describe("OnboardingPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Invalid corporation number")).toBeInTheDocument();
+    });
+  });
+
+  it("displays backend error message when submission fails with 400", async () => {
+    mockedValidateCorporationNumber.mockResolvedValue({
+      corporationNumber: "123456789",
+      valid: true,
+    });
+    mockedCreateProfileDetails.mockRejectedValue(
+      new HttpError(400, "Invalid phone number", { message: "Invalid phone number" })
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingPage />);
+
+    await user.type(getFirstNameInput(), "John");
+    await user.type(getLastNameInput(), "Doe");
+    await user.type(getPhoneInput(), "+11234567890");
+    await user.type(getCorporationNumberInput(), "123456789");
+    await user.tab();
+    await waitFor(() => {
+      expect(mockedValidateCorporationNumber).toHaveBeenCalled();
+    });
+
+    await user.click(getSubmitButton());
+
+    await waitFor(() => {
+      expect(screen.getByText("Invalid phone number")).toBeInTheDocument();
+    });
+  });
+
+  it("displays generic error message when submission fails with unexpected error", async () => {
+    mockedValidateCorporationNumber.mockResolvedValue({
+      corporationNumber: "123456789",
+      valid: true,
+    });
+    mockedCreateProfileDetails.mockRejectedValue(new Error("Network failure"));
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingPage />);
+
+    await user.type(getFirstNameInput(), "John");
+    await user.type(getLastNameInput(), "Doe");
+    await user.type(getPhoneInput(), "+11234567890");
+    await user.type(getCorporationNumberInput(), "123456789");
+    await user.tab();
+    await waitFor(() => {
+      expect(mockedValidateCorporationNumber).toHaveBeenCalled();
+    });
+
+    await user.click(getSubmitButton());
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("An unexpected error occurred. Please try again.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("clears form error when resubmitting", async () => {
+    mockedValidateCorporationNumber.mockResolvedValue({
+      corporationNumber: "123456789",
+      valid: true,
+    });
+    // First submission fails
+    mockedCreateProfileDetails.mockRejectedValueOnce(
+      new HttpError(400, "Invalid phone number", { message: "Invalid phone number" })
+    );
+    // Second submission succeeds
+    mockedCreateProfileDetails.mockResolvedValueOnce({
+      firstName: "John",
+      lastName: "Doe",
+      corporationNumber: "123456789",
+      phone: "+11234567890",
+    });
+
+    const user = userEvent.setup();
+    renderWithProviders(<OnboardingPage />);
+
+    await user.type(getFirstNameInput(), "John");
+    await user.type(getLastNameInput(), "Doe");
+    await user.type(getPhoneInput(), "+11234567890");
+    await user.type(getCorporationNumberInput(), "123456789");
+    await user.tab();
+    await waitFor(() => {
+      expect(mockedValidateCorporationNumber).toHaveBeenCalled();
+    });
+
+    // First submit - should show error
+    await user.click(getSubmitButton());
+    await waitFor(() => {
+      expect(screen.getByText("Invalid phone number")).toBeInTheDocument();
+    });
+
+    // Second submit - error should be cleared
+    await user.click(getSubmitButton());
+    await waitFor(() => {
+      expect(screen.queryByText("Invalid phone number")).not.toBeInTheDocument();
     });
   });
 });

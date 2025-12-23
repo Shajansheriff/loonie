@@ -5,7 +5,9 @@ import {
   FieldGroup,
   FieldLabel,
   FieldValidationStatus,
+  FormError,
 } from "@/components/ui/field";
+import { HttpError } from "@/api/client";
 import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { Controller, useForm } from "react-hook-form";
@@ -55,7 +57,9 @@ export default function OnboardingPage() {
   const onboardingFormSchema = createOnboardingFormSchema(queryClient);
 
   const { mutateAsync } = useCreateProfileDetails();
-  const { control, handleSubmit, formState } = useForm<z.infer<typeof onboardingFormSchema>>({
+  const { control, handleSubmit, formState, setError, clearErrors } = useForm<
+    z.infer<typeof onboardingFormSchema>
+  >({
     resolver: zodResolver(onboardingFormSchema),
     defaultValues: {
       firstName: "",
@@ -69,13 +73,19 @@ export default function OnboardingPage() {
   return (
     <main role="main" className="w-full max-w-md">
       <form
+      className="grid gap-4"
         onSubmit={(e) => {
           void handleSubmit(async (data) => {
+            clearErrors("root");
             try {
               const result = await mutateAsync(data);
               console.log(result);
             } catch (error) {
-              console.error(error);
+              if (error instanceof HttpError) {
+                setError("root", { message: error.message });
+              } else {
+                setError("root", { message: "An unexpected error occurred. Please try again." });
+              }
             }
           })(e);
         }}
@@ -148,21 +158,20 @@ export default function OnboardingPage() {
                   />
                   <FieldValidationStatus
                     show={fieldState.isDirty}
-                    isValidating={fieldState.isValidating}
-                    isValid={!fieldState.error}
-                    isInvalid={!!fieldState.error}
+                    fieldState={fieldState}
                   />
                 </div>
                 <FieldError errors={[fieldState.error]} />
               </Field>
             )}
           />
+        </FieldGroup>
+        <FormError className="-mt-4">{formState.errors.root?.message}</FormError>
           <div className="grid">
             <Button type="submit" disabled={formState.isSubmitting}>
               Submit <ArrowRightIcon />
             </Button>
           </div>
-        </FieldGroup>
       </form>
     </main>
   );

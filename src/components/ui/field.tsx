@@ -228,30 +228,80 @@ function FieldError({
 }
 
 interface FieldValidationStatusProps {
-  isValidating?: boolean;
-  isValid?: boolean;
-  isInvalid?: boolean;
+  fieldState: {
+    invalid: boolean;
+    isTouched: boolean;
+    isDirty: boolean;
+    isValidating: boolean;
+    error?: unknown;
+};
   show?: boolean;
   className?: string;
 }
 
 function FieldValidationStatus({
-  isValidating,
-  isValid,
-  isInvalid,
+  fieldState,
   show = true,
   className,
 }: FieldValidationStatusProps) {
   if (!show) return null;
 
+  const status = (() => {
+    if (fieldState.isValidating) return "validating" as const;
+    if ( !fieldState.invalid && !fieldState.error) return "valid" as const;
+    if ( fieldState.invalid || fieldState.error) return "invalid" as const;
+    return null;
+  })();
+
   return (
     <div
       data-slot="field-validation-status"
+      data-status={status}
       className={cn("absolute right-3 top-1/2 -translate-y-1/2", className)}
     >
-      {isValidating && <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />}
-      {!isValidating && isValid && <CheckCircleIcon className="h-4 w-4 text-green-500" />}
-      {!isValidating && isInvalid && <CircleAlertIcon className="h-4 w-4 text-destructive" />}
+      {status === "validating" && (
+        <Loader2Icon
+          aria-hidden="true"
+          data-slot="field-validation-status-validating"
+          className="h-4 w-4 animate-spin text-muted-foreground"
+        />
+      )}
+      {status === "valid" && (
+        <CheckCircleIcon
+          aria-hidden="true"
+          data-slot="field-validation-status-valid"
+          className="h-4 w-4 text-green-500"
+        />
+      )}
+      {status === "invalid" && (
+        <CircleAlertIcon
+          aria-hidden="true"
+          data-slot="field-validation-status-invalid"
+          className="h-4 w-4 text-destructive"
+        />
+      )}
+    </div>
+  );
+}
+
+function FormError({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & { children?: React.ReactNode }) {
+  if (!children) return null;
+
+  return (
+    <div
+      role="alert"
+      data-slot="form-error"
+      className={cn(
+        "rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive",
+        className
+      )}
+      {...props}
+    >
+      {children}
     </div>
   );
 }
@@ -268,4 +318,5 @@ export {
   FieldContent,
   FieldTitle,
   FieldValidationStatus,
+  FormError,
 };
