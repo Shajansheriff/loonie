@@ -1,5 +1,5 @@
 import ky, { type Options } from "ky";
-import { ok, err, ResultAsync, type Result } from "neverthrow";
+import { ok, err, ResultAsync } from "neverthrow";
 import { type ZodType } from "zod/v4";
 
 export class NetworkError {
@@ -57,75 +57,79 @@ const client = ky.create({
   timeout: 30000,
 });
 
-async function request<T>(
+function request<T>(
   method: "get" | "post" | "patch" | "delete",
   url: string,
   schema: ZodType<T>,
   payload: unknown,
   options?: Options
-): Promise<Result<T, ApiError>> {
-  try {
-    const res = client[method](url, {
-      ...options,
-      ...(payload !== undefined && { json: payload }),
-    });
-
-    // TODO: improve error handling here
-    const response = await res.json();
-    const parsed = schema.safeParse(response);
-
-    if (!parsed.success) {
-      return err(
-        new ValidationError(
-          parsed.error.issues.map((i) => ({
-            path: i.path.map(String).join("."),
-            message: i.message,
-          })),
-          parsed.error
-        )
-      );
-    }
-
-    return ok(parsed.data);
-  } catch (e) {
-    if (e instanceof Error && e.name === "HTTPError") {
-      const httpErr = e as unknown as { response: Response };
-      const res = httpErr.response;
-      let body: unknown;
+): ResultAsync<T, ApiError> {
+  return new ResultAsync(
+    (async () => {
       try {
-        body = await res.json();
-      } catch {
-        // ignore
+        const res = client[method](url, {
+          ...options,
+          ...(payload !== undefined && { json: payload }),
+        });
+
+        const response = await res.json();
+        const parsed = schema.safeParse(response);
+
+        if (!parsed.success) {
+          return err(
+            new ValidationError(
+              parsed.error.issues.map((i) => ({
+                path: i.path.map(String).join("."),
+                message: i.message,
+              })),
+              parsed.error
+            )
+          );
+        }
+
+        return ok(parsed.data);
+      } catch (e) {
+        if (e instanceof Error && e.name === "HTTPError") {
+          const httpErr = e as unknown as { response: Response };
+          const res = httpErr.response;
+          let body: unknown;
+          try {
+            body = await res.json();
+            console.log("body", body)
+          } catch {
+            // ignore
+          }
+          const msg =
+            typeof body === "object" && body && "message" in body
+              ? String(body.message)
+              : res.statusText;
+          return err(new HttpError(res.status, msg, body, e));
+        }
+
+        if (e instanceof TypeError) {
+          return err(new NetworkError(e));
+        }
+
+        return err(new UnknownError(e));
       }
-      const msg =
-        typeof body === "object" && body && "message" in body
-          ? String(body.message)
-          : res.statusText;
-      return err(new HttpError(res.status, msg, body, e));
-    }
-
-    if (e instanceof TypeError) {
-      return err(new NetworkError(e));
-    }
-
-    return err(new UnknownError(e));
-  }
+    })()
+  );
 }
 
 export const api = {
   get: <T>(url: string, responseSchema: ZodType<T>, options?: Options) => {
-    return ResultAsync.fromSafePromise(request("get", url, responseSchema, undefined, options));
+    return request<T>("get", url, responseSchema, undefined, options);
   },
 
   post: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options) => {
-    return ResultAsync.fromSafePromise(request("post", url, responseSchema, payload, options));
+    return request<T>("post", url, responseSchema, payload, options);
   },
 
   patch: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options) => {
-    return ResultAsync.fromSafePromise(request("patch", url, responseSchema, payload, options));
+    return request<T>("patch", url, responseSchema, payload, options);
   },
 
   delete: <T>(url: string, responseSchema: ZodType<T>, options?: Options) => {
-    return ResultAsync.fromSafePromise(request("delete", url, responseSchema, undefined, options));
+    return request<T>("delete", url, responseSchema, undefined, options);
   },
 };

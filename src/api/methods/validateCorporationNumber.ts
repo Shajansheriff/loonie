@@ -8,5 +8,5 @@ const validateCorporationNumberResponseSchema = z.object({
 
 
 export const validateCorporationNumber = (corporationNumber: string) => {
-    return api.get(`/corporation-number/${corporationNumber}`, validateCorporationNumberResponseSchema)
+    return api.get(`corporation-number/${corporationNumber}`, validateCorporationNumberResponseSchema)
 }
