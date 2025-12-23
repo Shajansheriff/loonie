@@ -6,7 +6,11 @@ const validateCorporationNumberResponseSchema = z.object({
   valid: z.boolean(),
 });
 
-export const validateCorporationNumber = (corporationNumber: string) => {
+export type ValidateCorporationNumberResponse = z.infer<
+  typeof validateCorporationNumberResponseSchema
+>;
+
+export const validateCorporationNumber = (corporationNumber: string): Promise<ValidateCorporationNumberResponse> => {
   return api.get(
     `corporation-number/${corporationNumber}`,
     validateCorporationNumberResponseSchema

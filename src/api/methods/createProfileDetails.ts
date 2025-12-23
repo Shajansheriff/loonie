@@ -19,6 +19,8 @@ const createProfileDetailsResponseSchema = z.object({
 
 export type ProfileDetailsResponse = z.infer<typeof createProfileDetailsResponseSchema>;
 
-export const createProfileDetails = (profileDetails: ProfileDetailsInput) => {
+export const createProfileDetails = (
+  profileDetails: ProfileDetailsInput
+): Promise<ProfileDetailsResponse> => {
   return api.post("profile-details", profileDetails, createProfileDetailsResponseSchema);
 };
