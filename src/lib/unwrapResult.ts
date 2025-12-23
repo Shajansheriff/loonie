@@ -1,6 +1,5 @@
 import type { ResultAsync } from "neverthrow";
 
-
 export function unwrapResultAsync<T, E>(result: ResultAsync<T, E>): Promise<T> {
   return result.match(
     (value) => value,
@@ -9,13 +8,14 @@ export function unwrapResultAsync<T, E>(result: ResultAsync<T, E>): Promise<T> {
       if (error instanceof Error) {
         throw error;
       }
-      throw new Error(typeof error === "object" && error !== null && "message" in error 
-        ? String((error as { message: unknown }).message) 
-        : String(error), 
+      throw new Error(
+        typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message: unknown }).message)
+          : String(error),
         { cause: error }
       );
     }
   );
 }
 
-export type UnWrapReturnType<T> = Promise<T>
+export type UnWrapReturnType<T> = Promise<T>;

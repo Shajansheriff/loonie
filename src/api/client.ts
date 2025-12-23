@@ -50,7 +50,8 @@ export class UnknownError {
 
 export type ApiError = NetworkError | HttpError | ValidationError | UnknownError;
 
-const BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:3000";
+const BASE_URL: string =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:3000";
 
 const client = ky.create({
   prefixUrl: BASE_URL,
@@ -95,7 +96,7 @@ function request<T>(
           let body: unknown;
           try {
             body = await res.json();
-            console.log("body", body)
+            console.log("body", body);
           } catch {
             // ignore
           }

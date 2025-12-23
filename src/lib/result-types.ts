@@ -1,12 +1,10 @@
 import type { ResultAsync } from "neverthrow";
 
-
 export type InferOk<T> = T extends (...args: never[]) => ResultAsync<infer U, unknown>
   ? U
   : T extends ResultAsync<infer U, unknown>
     ? U
     : never;
-
 
 export type InferErr<T> = T extends (...args: never[]) => ResultAsync<unknown, infer E>
   ? E
@@ -14,7 +12,4 @@ export type InferErr<T> = T extends (...args: never[]) => ResultAsync<unknown, i
     ? E
     : never;
 
-export type InferInput<T> = T extends (input: infer I) => ResultAsync<unknown, unknown>
-  ? I
-  : never;
-
+export type InferInput<T> = T extends (input: infer I) => ResultAsync<unknown, unknown> ? I : never;
