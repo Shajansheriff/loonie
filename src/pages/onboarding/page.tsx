@@ -1,178 +1,115 @@
-import { ArrowRightIcon } from "lucide-react";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldValidationStatus,
-  FormError,
-} from "@/components/ui/field";
+import { useState } from "react";
 import { HttpError } from "@/api/client";
-import { Input } from "@/components/ui/input";
 import { z } from "zod";
-import { Controller, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { type SubmitHandler } from "react-hook-form";
 import { useCreateProfileDetails } from "@/queries/useCreateProfileDetails";
-import { useQueryClient } from "@tanstack/react-query";
-import { validateCorporationNumberQueryOptions } from "@/queries/useValidateCorporationNumber";
 import { logger, captureException } from "@/lib/logger";
+import { StepIndicator } from "./components/step-indicator";
+import { ProfileForm, type ProfileData } from "./components/profile-form";
+import { BusinessDetailsForm, type BusinessDetailsData } from "./components/business-details-form";
+import { FinishedForm } from "./components/finished-form";
 
-const CORPORATION_NUMBER_LENGTH = 9;
-const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${String(CORPORATION_NUMBER_LENGTH)}}$`);
+const STEPS = [
+  { id: 1, title: "Profile" },
+  { id: 2, title: "Business Details" },
+  { id: 3, title: "Complete" },
+];
 
-const createOnboardingFormSchema = (queryClient: ReturnType<typeof useQueryClient>) =>
-  z.object({
-    firstName: z.string().min(1, "Required").max(50, "Max 50 characters"),
-    lastName: z.string().min(1, "Required").max(50, "Max 50 characters"),
-    corporationNumber: z
-      .string()
-      .min(1, "Required")
-      .regex(CORPORATION_NUMBER_REGEX, `Must be ${String(CORPORATION_NUMBER_LENGTH)} digits`)
-      .refine(
-        async (value) => {
-          if (!CORPORATION_NUMBER_REGEX.test(value)) {
-            return true;
-          }
+type Step = (typeof STEPS)[number]["id"];
 
-          try {
-            const result = await queryClient.fetchQuery(
-              validateCorporationNumberQueryOptions(value)
-            );
-            return result.valid;
-          } catch {
-            // Treat API errors to make the field invalid
-            return false;
-          }
-        },
-        { message: "Invalid corporation number" }
-      ),
-    phone: z
-      .string()
-      .min(1, "Required")
-      .regex(/^\+1\d{10}$/, "Invalid format"),
-  });
+// Step data cache keys
+const STEP_KEYS = z.enum(["profile", "businessDetails", "complete"]);
+
+// Type-safe cache for step data
+interface StepDataMap {
+  [STEP_KEYS.enum.profile]: ProfileData;
+  [STEP_KEYS.enum.businessDetails]: BusinessDetailsData;
+  [STEP_KEYS.enum.complete]: boolean;
+}
+
+type StepDataCache = {
+  [K in z.infer<typeof STEP_KEYS>]?: StepDataMap[K];
+};
 
 export default function OnboardingPage() {
-  const queryClient = useQueryClient();
-  const onboardingFormSchema = createOnboardingFormSchema(queryClient);
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [stepCache, setStepCache] = useState<StepDataCache>({});
+  const [rootError, setRootError] = useState<string | undefined>();
 
   const { mutateAsync } = useCreateProfileDetails();
-  const { control, handleSubmit, formState, setError, clearErrors } = useForm<
-    z.infer<typeof onboardingFormSchema>
-  >({
-    resolver: zodResolver(onboardingFormSchema),
-    defaultValues: {
-      firstName: "",
-      lastName: "",
-      corporationNumber: "",
-      phone: "",
-    },
-    mode: "onBlur",
-  });
+
+  const setCacheValue = <K extends z.infer<typeof STEP_KEYS>>(key: K, value: StepDataMap[K]) => {
+    setStepCache((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const getCacheValue = <K extends z.infer<typeof STEP_KEYS>>(
+    key: K
+  ): StepDataMap[K] | undefined => {
+    return stepCache[key] as StepDataMap[K] | undefined;
+  };
+
+  const handleProfileSubmit: SubmitHandler<ProfileData> = async (data) => {
+    setRootError(undefined);
+
+    try {
+      await mutateAsync(data);
+      logger.info("Profile created successfully", { firstName: data.firstName });
+
+      setCacheValue(STEP_KEYS.enum.profile, data);
+      setCurrentStep(2);
+    } catch (error) {
+      if (error instanceof HttpError) {
+        logger.warn("Profile creation failed", {
+          status: error.status,
+          message: error.message,
+          body: error.body,
+        });
+        setRootError(error.message);
+      } else {
+        captureException(error, { action: "createProfile" });
+        setRootError("An unexpected error occurred. Please try again.");
+      }
+    }
+  };
+
+  const handleBusinessDetailsSubmit: SubmitHandler<BusinessDetailsData> = (data) => {
+    setCacheValue(STEP_KEYS.enum.businessDetails, data);
+    setCurrentStep(3);
+  };
+
+  const handleFinish = () => {
+    logger.info("Onboarding complete", { cache: stepCache });
+  };
+
+  const handleBackToStep1 = () => {
+    setCurrentStep(1);
+  };
+
+  const handleBackToStep2 = () => {
+    setCurrentStep(2);
+  };
 
   return (
     <main role="main" className="w-full max-w-md">
-      <form
-        className="grid gap-4"
-        onSubmit={(e) => {
-          void handleSubmit(async (data) => {
-            clearErrors("root");
-            try {
-              const result = await mutateAsync(data);
-              logger.info("Profile created successfully", { firstName: result.firstName });
-            } catch (error) {
-              if (error instanceof HttpError) {
-                logger.warn("Profile creation failed", { status: error.status, message: error.message, body: error.body });
-                setError("root", { message: error.message });
-              } else {
-                captureException(error, { action: "createProfile" });
-                setError("root", { message: "An unexpected error occurred. Please try again." });
-              }
-            }
-          })(e);
-        }}
-      >
-        <FieldGroup className="gap-1">
-          <div className="grid grid-cols-2 gap-4">
-            <Controller
-              control={control}
-              name="firstName"
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>First Name</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    type="text"
-                    placeholder="John"
-                  />
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
-            <Controller
-              control={control}
-              name="lastName"
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel htmlFor={field.name}>Last Name</FieldLabel>
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    type="text"
-                    placeholder="Doe"
-                  />
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
-          </div>
-          <Controller
-            control={control}
-            name="phone"
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name}>Phone Number</FieldLabel>
-                <Input {...field} id={field.name} aria-invalid={fieldState.invalid} type="text" />
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-          <Controller
-            control={control}
-            name="corporationNumber"
-            render={({ field, fieldState }) => (
-              <Field>
-                <FieldLabel htmlFor={field.name}>Corporation Number</FieldLabel>
-                <div className="relative">
-                  <Input
-                    {...field}
-                    id={field.name}
-                    aria-invalid={fieldState.invalid}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    onChange={(e) => {
-                      field.onChange(e.target.value.replace(/\D/g, ""));
-                    }}
-                  />
-                  <FieldValidationStatus show={fieldState.isDirty} fieldState={fieldState} />
-                </div>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-        </FieldGroup>
-        <FormError className="-mt-4">{formState.errors.root?.message}</FormError>
-        <div className="grid">
-          <Button type="submit" disabled={formState.isSubmitting}>
-            Submit <ArrowRightIcon />
-          </Button>
-        </div>
-      </form>
+      <StepIndicator steps={STEPS} currentStep={currentStep} />
+
+      {currentStep === 1 && (
+        <ProfileForm
+          defaultValues={getCacheValue(STEP_KEYS.enum.profile)}
+          onSubmit={(data) => void handleProfileSubmit(data)}
+          rootError={rootError}
+        />
+      )}
+
+      {currentStep === 2 && (
+        <BusinessDetailsForm
+          defaultValues={getCacheValue(STEP_KEYS.enum.businessDetails)}
+          onSubmit={handleBusinessDetailsSubmit}
+          onBack={handleBackToStep1}
+        />
+      )}
+
+      {currentStep === 3 && <FinishedForm onBack={handleBackToStep2} onFinish={handleFinish} />}
     </main>
   );
 }

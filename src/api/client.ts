@@ -60,12 +60,34 @@ async function request<T>(
   schema: ZodType<T>,
   payload: unknown,
   options?: Options
-): Promise<T> {
+): Promise<T>;
+
+async function request(
+  method: "get" | "post" | "patch" | "delete",
+  url: string,
+  schema: undefined,
+  payload: unknown,
+  options?: Options
+): Promise<void>;
+
+// Implementation
+async function request<T>(
+  method: "get" | "post" | "patch" | "delete",
+  url: string,
+  schema: ZodType<T> | undefined,
+  payload: unknown,
+  options?: Options
+): Promise<T | void> {
   try {
-    const res = client[method](url, {
+    const res = await client[method](url, {
       ...options,
       ...(payload !== undefined && { json: payload }),
     });
+
+    // If no schema provided, don't parse JSON (void response)
+    if (!schema) {
+      return;
+    }
 
     const response = await res.json();
     const parsed = schema.safeParse(response);
@@ -122,6 +144,10 @@ export const api = {
     options?: Options
   ): Promise<T> => {
     return request<T>("post", url, responseSchema, payload, options);
+  },
+
+  postVoid: (url: string, payload: unknown, options?: Options): Promise<void> => {
+    return request("post", url, undefined, payload, options);
   },
 
   patch: <T>(

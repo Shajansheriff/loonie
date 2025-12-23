@@ -1,5 +1,3 @@
-
-
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 type LogContext = Record<string, unknown>;
@@ -18,7 +16,6 @@ function formatMessage(level: LogLevel, message: string, context?: LogContext): 
   const contextStr = context ? ` ${JSON.stringify(context)}` : "";
   return `[${timestamp}] [${level.toUpperCase()}] ${message}${contextStr}`;
 }
-
 
 export const logger: Logger = {
   debug: (message, context) => {
@@ -43,9 +40,6 @@ export const logger: Logger = {
   },
 };
 
-
 export function captureException(error: unknown, context?: LogContext): void {
   logger.error("Captured exception", error, context);
-
 }
-
