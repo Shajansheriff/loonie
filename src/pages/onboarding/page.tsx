@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useCreateProfileDetails } from "@/queries/useCreateProfileDetails";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateCorporationNumberQueryOptions } from "@/queries/useValidateCorporationNumber";
+import { logger, captureException } from "@/lib/logger";
 
 const CORPORATION_NUMBER_LENGTH = 9;
 const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${String(CORPORATION_NUMBER_LENGTH)}}$`);
@@ -79,11 +80,13 @@ export default function OnboardingPage() {
             clearErrors("root");
             try {
               const result = await mutateAsync(data);
-              console.log(result);
+              logger.info("Profile created successfully", { firstName: result.firstName });
             } catch (error) {
               if (error instanceof HttpError) {
+                logger.warn("Profile creation failed", { status: error.status, message: error.message, body: error.body });
                 setError("root", { message: error.message });
               } else {
+                captureException(error, { action: "createProfile" });
                 setError("root", { message: "An unexpected error occurred. Please try again." });
               }
             }
