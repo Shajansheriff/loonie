@@ -28,7 +28,6 @@ describe("createProfileDetails", () => {
       );
 
       await createProfileDetails(validProfileInput);
-
     });
 
     it("handles different valid inputs", async () => {
@@ -47,7 +46,6 @@ describe("createProfileDetails", () => {
       };
 
       await createProfileDetails(input);
-
     });
   });
 
