@@ -341,5 +341,3 @@ describe("OnboardingPage", () => {
     });
   });
 });
-
-

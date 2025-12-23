@@ -55,5 +55,3 @@ test.describe("Onboarding Page", () => {
     await expect(page.getByText("Must be 9 digits")).toBeVisible();
   });
 });
-
-

@@ -180,5 +180,3 @@ Rule of thumb:
 - **Avoid over-mocking internals**:
   - in UI tests, mock “the boundary” (API methods), not internal component functions.
   - in API tests, mock “the network” (MSW), not `api.get/post` internals.
-
-
