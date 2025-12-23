@@ -67,7 +67,7 @@ export default function OnboardingPage() {
   });
 
   return (
-    <div className="w-full max-w-md">
+    <main role="main" className="w-full max-w-md">
       <form
         onSubmit={(e) => {
           void handleSubmit(async (data) => {
@@ -164,7 +164,7 @@ export default function OnboardingPage() {
           </div>
         </FieldGroup>
       </form>
-    </div>
+    </main>
   );
 }
 
