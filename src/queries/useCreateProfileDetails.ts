@@ -1,14 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
-import { createProfileDetails } from "../api/methods/createProfileDetails";
-import { unwrapResultAsync } from "../lib/unwrapResult";
-import type { InferOk, InferErr, InferInput } from "../lib/result-types";
+import {
+  createProfileDetails,
+  type ProfileDetailsInput,
+  type ProfileDetailsResponse,
+} from "../api/methods/createProfileDetails";
+import type { ApiError } from "../api/client";
 
 export function useCreateProfileDetails() {
-  return useMutation<
-    InferOk<typeof createProfileDetails>,
-    InferErr<typeof createProfileDetails>,
-    InferInput<typeof createProfileDetails>
-  >({
-    mutationFn: (profileDetails) => unwrapResultAsync(createProfileDetails(profileDetails)),
+  return useMutation<ProfileDetailsResponse, ApiError, ProfileDetailsInput>({
+    mutationFn: (profileDetails) => createProfileDetails(profileDetails),
   });
 }

@@ -1,50 +1,46 @@
 import ky, { type Options } from "ky";
-import { ok, err, ResultAsync } from "neverthrow";
 import { type ZodType } from "zod/v4";
 
-export class NetworkError {
+export class NetworkError extends Error {
   readonly _tag = "NetworkError" as const;
-  readonly cause: Error;
 
   constructor(cause: Error) {
-    this.cause = cause;
+    super(cause.message, { cause });
+    this.name = "NetworkError";
   }
 }
 
-export class HttpError {
+export class HttpError extends Error {
   readonly _tag = "HttpError" as const;
   readonly status: number;
-  readonly message: string;
   readonly body?: unknown;
-  readonly cause?: Error;
 
   constructor(status: number, message: string, body?: unknown, cause?: Error) {
+    super(message, { cause });
+    this.name = "HttpError";
     this.status = status;
-    this.message = message;
     this.body = body;
-    this.cause = cause;
   }
 }
 
-export class ValidationError {
+export class ValidationError extends Error {
   readonly _tag = "ValidationError" as const;
   readonly issues: { path: string; message: string }[];
-  readonly cause?: unknown;
 
   constructor(issues: { path: string; message: string }[], cause?: unknown) {
+    super("Validation failed");
+    this.name = "ValidationError";
     this.issues = issues;
     this.cause = cause;
   }
 }
 
-export class UnknownError {
+export class UnknownError extends Error {
   readonly _tag = "UnknownError" as const;
-  readonly message: string;
-  readonly cause: unknown;
 
   constructor(cause: unknown) {
-    this.cause = cause;
-    this.message = cause instanceof Error ? cause.message : String(cause);
+    super(cause instanceof Error ? cause.message : String(cause), { cause });
+    this.name = "UnknownError";
   }
 }
 
@@ -58,63 +54,60 @@ const client = ky.create({
   timeout: 30000,
 });
 
-function request<T>(
+async function request<T>(
   method: "get" | "post" | "patch" | "delete",
   url: string,
   schema: ZodType<T>,
   payload: unknown,
   options?: Options
-): ResultAsync<T, ApiError> {
-  return new ResultAsync(
-    (async () => {
+): Promise<T> {
+  try {
+    const res = client[method](url, {
+      ...options,
+      ...(payload !== undefined && { json: payload }),
+    });
+
+    const response = await res.json();
+    const parsed = schema.safeParse(response);
+
+    if (!parsed.success) {
+      throw new ValidationError(
+        parsed.error.issues.map((i) => ({
+          path: i.path.map(String).join("."),
+          message: i.message,
+        })),
+        parsed.error
+      );
+    }
+
+    return parsed.data;
+  } catch (e) {
+    if (e instanceof ValidationError || e instanceof HttpError || e instanceof NetworkError) {
+      throw e;
+    }
+
+    if (e instanceof Error && e.name === "HTTPError") {
+      const httpErr = e as unknown as { response: Response };
+      const res = httpErr.response;
+      let body: unknown;
       try {
-        const res = client[method](url, {
-          ...options,
-          ...(payload !== undefined && { json: payload }),
-        });
-
-        const response = await res.json();
-        const parsed = schema.safeParse(response);
-
-        if (!parsed.success) {
-          return err(
-            new ValidationError(
-              parsed.error.issues.map((i) => ({
-                path: i.path.map(String).join("."),
-                message: i.message,
-              })),
-              parsed.error
-            )
-          );
-        }
-
-        return ok(parsed.data);
-      } catch (e) {
-        if (e instanceof Error && e.name === "HTTPError") {
-          const httpErr = e as unknown as { response: Response };
-          const res = httpErr.response;
-          let body: unknown;
-          try {
-            body = await res.json();
-            console.log("body", body);
-          } catch {
-            // ignore
-          }
-          const msg =
-            typeof body === "object" && body && "message" in body
-              ? String(body.message)
-              : res.statusText;
-          return err(new HttpError(res.status, msg, body, e));
-        }
-
-        if (e instanceof TypeError) {
-          return err(new NetworkError(e));
-        }
-
-        return err(new UnknownError(e));
+        body = await res.json();
+      } catch {
+        // ignore
       }
-    })()
-  );
+      const msg =
+        typeof body === "object" && body && "message" in body
+          ? String(body.message)
+          : res.statusText;
+      throw new HttpError(res.status, msg, body, e);
+    }
+
+    if (e instanceof TypeError) {
+      throw new NetworkError(e);
+    }
+
+    throw new UnknownError(e);
+  }
 }
 
 export const api = {
