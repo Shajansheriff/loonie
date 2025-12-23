@@ -39,7 +39,7 @@ We write tests to reduce risk, not to “maximize coverage”.
 
 - **Benefits**: validates accessibility queries, form behavior, validation messages, button disabled states.
 - **Tradeoffs**: can get slower/flakier if they rely on too many async layers; keep them focused.
-- **Where**: colocated `*.test.tsx` (e.g. `src/pages/register/page.test.tsx`).
+- **Where**: colocated `*.test.tsx` (e.g. `src/pages/onboarding/page.test.tsx`).
 
 ### End-to-end (E2E) tests
 
@@ -103,7 +103,7 @@ This style is used heavily by the API method tests in `src/api/methods/*.test.ts
 
 ### Module mocking for UI tests (component isolation)
 
-The register page component tests (`src/pages/register/page.test.tsx`) mock endpoint functions directly:
+The onboarding page component tests (`src/pages/onboarding/page.test.tsx`) mock endpoint functions directly:
 
 - `vi.mock("@/api/methods/validateCorporationNumber", ...)`
 - `vi.mock("@/api/methods/createProfileDetails", ...)`
@@ -139,7 +139,7 @@ Rule of thumb:
 ### Keep tests deterministic
 
 - Prefer MSW overrides (`server.use(...)`) over hitting real APIs.
-- Use stable query clients in tests (see `createTestQueryClient()` in the register page tests).
+- Use stable query clients in tests (see `createTestQueryClient()` in the onboarding page tests).
 - Avoid relying on timing; use `waitFor(...)` for async state changes.
 
 ### What to assert (practical guidance)

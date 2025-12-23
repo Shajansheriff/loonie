@@ -14,10 +14,11 @@ import { Button } from "@/components/ui/button";
 import { useCreateProfileDetails } from "@/queries/useCreateProfileDetails";
 import { useQueryClient } from "@tanstack/react-query";
 import { validateCorporationNumberQueryOptions } from "@/queries/useValidateCorporationNumber";
+
 const CORPORATION_NUMBER_LENGTH = 9;
 const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${String(CORPORATION_NUMBER_LENGTH)}}$`);
 
-const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>) =>
+const createOnboardingFormSchema = (queryClient: ReturnType<typeof useQueryClient>) =>
   z.object({
     firstName: z.string().min(1, "Required").max(50, "Max 50 characters"),
     lastName: z.string().min(1, "Required").max(50, "Max 50 characters"),
@@ -49,13 +50,13 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
       .regex(/^\+1\d{10}$/, "Invalid format"),
   });
 
-export default function RegisterPage() {
+export default function OnboardingPage() {
   const queryClient = useQueryClient();
-  const registerFormSchema = createRegisterFormSchema(queryClient);
+  const onboardingFormSchema = createOnboardingFormSchema(queryClient);
 
   const { mutateAsync } = useCreateProfileDetails();
-  const { control, handleSubmit, formState } = useForm<z.infer<typeof registerFormSchema>>({
-    resolver: zodResolver(registerFormSchema),
+  const { control, handleSubmit, formState } = useForm<z.infer<typeof onboardingFormSchema>>({
+    resolver: zodResolver(onboardingFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -166,3 +167,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+

@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Register Page", () => {
+test.describe("Onboarding Page", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
-  test("should display the registration form", async ({ page }) => {
+  test("should display the onboarding form", async ({ page }) => {
     await expect(page.getByLabel("First Name")).toBeVisible();
     await expect(page.getByLabel("Last Name")).toBeVisible();
     await expect(page.getByLabel("Phone Number")).toBeVisible();
@@ -55,3 +55,5 @@ test.describe("Register Page", () => {
     await expect(page.getByText("Must be 9 digits")).toBeVisible();
   });
 });
+
+

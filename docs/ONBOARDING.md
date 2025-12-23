@@ -35,7 +35,7 @@ VITE_API_BASE_URL=http://localhost:3000
 
 - **App entry**: `src/main.tsx` (React root + QueryClientProvider)
 - **App shell**: `src/App.tsx` (what page renders)
-- **Main page**: `src/pages/register/page.tsx`
+- **Main page**: `src/pages/onboarding/page.tsx`
 - **Server-state layer**: `src/queries/*`
 - **API endpoint methods**: `src/api/methods/*`
 - **Shared HTTP client**: `src/api/client.ts`

@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import RegisterPage from "./page";
+import OnboardingPage from "./page";
 
 // Mock the API methods
 vi.mock("@/api/methods/validateCorporationNumber", () => ({
@@ -68,13 +68,13 @@ function getSubmitButton() {
   return screen.getByRole("button", { name: /submit/i });
 }
 
-describe("RegisterPage", () => {
+describe("OnboardingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders all form fields", () => {
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
 
     expect(getFirstNameInput()).toBeVisible();
     expect(getFirstNameInput()).toBeEnabled();
@@ -90,7 +90,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error for empty first name on blur", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const firstNameInput = getFirstNameInput();
 
     await user.click(firstNameInput);
@@ -103,7 +103,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error for first name exceeding max length", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const firstNameInput = getFirstNameInput();
 
     await user.type(firstNameInput, "a".repeat(51));
@@ -116,7 +116,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error for invalid phone format", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const phoneInput = getPhoneInput();
 
     await user.type(phoneInput, "1234567890");
@@ -129,7 +129,7 @@ describe("RegisterPage", () => {
 
   it("accepts valid phone number format", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const phoneInput = getPhoneInput();
 
     await user.type(phoneInput, "+11234567890");
@@ -142,7 +142,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error for corporation number not 9 digits", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
 
     await user.type(corpNumberInput, "12345");
@@ -155,7 +155,7 @@ describe("RegisterPage", () => {
 
   it("only allows numeric input in corporation number field", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
     assertHtmlInputElement(corpNumberInput);
 
@@ -170,7 +170,7 @@ describe("RegisterPage", () => {
       valid: false,
     });
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
 
     await user.type(corpNumberInput, "123456789");
@@ -190,7 +190,7 @@ describe("RegisterPage", () => {
       valid: true,
     });
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
 
     await user.type(corpNumberInput, "123456789");
@@ -210,7 +210,7 @@ describe("RegisterPage", () => {
       valid: true,
     });
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
 
     await user.type(corpNumberInput, "123456789");
@@ -258,7 +258,7 @@ describe("RegisterPage", () => {
       phone: "+11234567890",
     });
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
 
     await user.type(getFirstNameInput(), "John");
     await user.type(getLastNameInput(), "Doe");
@@ -295,7 +295,7 @@ describe("RegisterPage", () => {
     mockedCreateProfileDetails.mockImplementation(() => submitPromise);
 
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
 
     await user.type(getFirstNameInput(), "John");
     await user.type(getLastNameInput(), "Doe");
@@ -330,7 +330,7 @@ describe("RegisterPage", () => {
   it("handles API error during corporation number validation", async () => {
     mockedValidateCorporationNumber.mockRejectedValue(new Error("API Error"));
     const user = userEvent.setup();
-    renderWithProviders(<RegisterPage />);
+    renderWithProviders(<OnboardingPage />);
     const corpNumberInput = getCorporationNumberInput();
 
     await user.type(corpNumberInput, "123456789");
@@ -341,3 +341,5 @@ describe("RegisterPage", () => {
     });
   });
 });
+
+

@@ -1,6 +1,6 @@
 # Loonie
 
-Small React app that renders a **registration form** and demonstrates:
+Small React app that renders an **onboarding form** and demonstrates:
 
 - client-side validation with **Zod** + **react-hook-form**
 - server-state validation via **TanStack Query**

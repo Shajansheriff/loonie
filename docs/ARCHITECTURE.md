@@ -6,7 +6,7 @@ This document describes the project at a **system-design level**: the major buil
 
 At a high level this is a **single-page React application** that:
 
-- renders a registration form
+- renders an onboarding form
 - validates inputs locally and (for some fields) via backend checks
 - submits data to an API
 
@@ -59,7 +59,7 @@ src/
     client.ts                # ky wrapper + typed error model + zod response validation
     methods/                 # one file per endpoint (request + response schema)
   queries/                   # tanstack query boundary (queryOptions/hooks)
-  pages/                     # route/page-level UI (currently register)
+  pages/                     # route/page-level UI (currently onboarding)
   components/ui/             # shared UI components (shadcn-style + radix primitives)
   test/                      # Vitest/MSW test setup and helpers
 e2e/                         # Playwright tests
@@ -141,7 +141,7 @@ Submitting the form is modeled as a mutation:
 ### Server state / async coordination
 
 - **TanStack Query (`@tanstack/react-query`)**: caching, deduping, retries, async state.
-  - In the register page, async corporation-number validation uses `queryClient.fetchQuery(...)`
+  - In the onboarding page, async corporation-number validation uses `queryClient.fetchQuery(...)`
     with a stable query key, so repeated validation is cached/deduped.
 
 ### Networking
