@@ -84,6 +84,35 @@ Notes:
 - E2E runs `npm run build` first, then starts `vite preview` via Playwright `webServer`.
 - The Playwright base URL is `http://localhost:4173` (see `playwright.config.ts`).
 
+### Lighthouse audits (via Playwright runner)
+
+We keep Lighthouse audits **separate** from the normal E2E suite because they are slower and noisier.
+
+Run:
+
+```bash
+npm run test:lighthouse
+```
+
+Notes:
+
+- Uses `playwright.lighthouse.config.ts` and runs tests in `e2e/lighthouse/`.
+- Outputs Playwright HTML report to `playwright-report-lighthouse/`.
+- Outputs Lighthouse reports to `playwright-report-lighthouse/lighthouse/` (HTML + JSON).
+- Thresholds can be tuned via env vars:
+  - `LH_PERF` (default `0.6`)
+  - `LH_A11Y` (default `0.9`)
+  - `LH_BP` (default `0.8`)
+  - `LH_SEO` (default `0.8`)
+
+#### CI (GitHub Actions)
+
+The workflow in `.github/workflows/ci.yml` runs Lighthouse in a **separate job** and uploads artifacts:
+
+- `lighthouse-report`: contains `playwright-report-lighthouse/` (including `lighthouse/home.html` and `lighthouse/home.json`)
+
+In GitHub, open a run → **Artifacts** → download `lighthouse-report`.
+
 ## Mocking strategy
 
 ### MSW for network-layer realism (Vitest)

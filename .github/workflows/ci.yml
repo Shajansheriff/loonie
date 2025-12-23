@@ -2,12 +2,19 @@ name: CI
 
 on:
   push:
+    branches: [main, master]
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   ci:
+    name: Lint, Build & Test
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -23,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Check lint
         run: npm run lint
@@ -48,4 +55,44 @@ jobs:
         with:
           name: playwright-report
           path: playwright-report/
+          retention-days: 30
+
+  lighthouse:
+    name: Lighthouse audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: ci
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Lighthouse scores can be noisy in CI. Keep budgets realistic; tune via env vars if needed.
+      - name: Lighthouse audit
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          LH_PERF: "0.9"
+          LH_A11Y: "0.9"
+          LH_BP: "0.8"
+          LH_SEO: "0.8"
+        run: npm run test:lighthouse
+
+      - name: Upload Lighthouse report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: lighthouse-report
+          path: playwright-report-lighthouse/
           retention-days: 30

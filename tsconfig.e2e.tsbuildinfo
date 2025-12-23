@@ -1,1 +1,1 @@
-{"root":["./e2e/onboarding.spec.ts"],"version":"5.9.3"}
+{"root":["./e2e/onboarding.spec.ts","./e2e/lighthouse/home.lighthouse.spec.ts"],"version":"5.9.3"}
