@@ -2,7 +2,7 @@
 
 This document maps the take-home task requirements to the implementation.
 
-**Live demo**: [loonie.shajahan.me](https://loonie.shajahan.me)
+**Live demo**: [loonie.shajahan.me](http://loonie.shajahan.me)
 
 ---
 
