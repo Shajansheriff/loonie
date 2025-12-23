@@ -51,6 +51,7 @@ VITE_API_BASE_URL=http://localhost:3000
 
 ## Docs
 
+- Submission checklist: [`docs/SUBMISSION.md`](./docs/SUBMISSION.md)
 - Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
 - Dev onboarding: [`docs/ONBOARDING.md`](./docs/ONBOARDING.md)
 - Testing: [`docs/TESTING.md`](./docs/TESTING.md)
