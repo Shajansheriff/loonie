@@ -308,8 +308,8 @@ describe("OnboardingPage", () => {
       });
 
       // Create a deferred promise we can resolve manually to simulate a API call delay
-      let resolveSubmit!: () => void;
-      const submitPromise = new Promise<void>((resolve) => {
+      let resolveSubmit!: (value: PromiseLike<undefined> | undefined) => void
+      const submitPromise = new Promise<undefined>((resolve) => {
         resolveSubmit = resolve;
       });
       mockedCreateProfileDetails.mockImplementation(() => submitPromise);
@@ -334,7 +334,7 @@ describe("OnboardingPage", () => {
       });
 
       // Resolve the promise to simulate the API call completing
-      resolveSubmit();
+      resolveSubmit(undefined);
 
       // After success, we advance to step 2
       await waitFor(() => {
