@@ -28,16 +28,17 @@ describe("validateCorporationNumber", () => {
     it("returns valid=false for an invalid corporation number", async () => {
       server.use(
         http.get(`${BASE_URL}/corporation-number/:corpNum`, ({ params }) => {
-          return HttpResponse.json({
-            corporationNumber: params.corpNum,
-            valid: false,
-          }, { status: 404 });
+          return HttpResponse.json(
+            {
+              corporationNumber: params.corpNum,
+              valid: false,
+            },
+            { status: 404 }
+          );
         })
       );
 
-      await expect(validateCorporationNumber("000000000")).rejects.toThrow(
-        HttpError
-      );
+      await expect(validateCorporationNumber("000000000")).rejects.toThrow(HttpError);
       try {
         await validateCorporationNumber("000000000");
       } catch (error) {
@@ -56,16 +57,11 @@ describe("validateCorporationNumber", () => {
     it("throws HttpError on 400 response", async () => {
       server.use(
         http.get(`${BASE_URL}/corporation-number/:corpNum`, () => {
-          return HttpResponse.json(
-            { message: "Invalid input data" },
-            { status: 400 }
-          );
+          return HttpResponse.json({ message: "Invalid input data" }, { status: 400 });
         })
       );
 
-      await expect(validateCorporationNumber("999999999")).rejects.toThrow(
-        HttpError
-      );
+      await expect(validateCorporationNumber("999999999")).rejects.toThrow(HttpError);
 
       try {
         await validateCorporationNumber("999999999");
@@ -82,16 +78,11 @@ describe("validateCorporationNumber", () => {
     it("throws HttpError on 500 response", async () => {
       server.use(
         http.get(`${BASE_URL}/corporation-number/:corpNum`, () => {
-          return HttpResponse.json(
-            { message: "Internal server error" },
-            { status: 500 }
-          );
+          return HttpResponse.json({ message: "Internal server error" }, { status: 500 });
         })
       );
 
-      await expect(validateCorporationNumber("123456789")).rejects.toThrow(
-        HttpError
-      );
+      await expect(validateCorporationNumber("123456789")).rejects.toThrow(HttpError);
 
       try {
         await validateCorporationNumber("123456789");
@@ -112,9 +103,7 @@ describe("validateCorporationNumber", () => {
         })
       );
 
-      await expect(validateCorporationNumber("123456789")).rejects.toThrow(
-        ValidationError
-      );
+      await expect(validateCorporationNumber("123456789")).rejects.toThrow(ValidationError);
 
       try {
         await validateCorporationNumber("123456789");
@@ -133,9 +122,7 @@ describe("validateCorporationNumber", () => {
         })
       );
 
-      await expect(validateCorporationNumber("123456789")).rejects.toThrow(
-        NetworkError
-      );
+      await expect(validateCorporationNumber("123456789")).rejects.toThrow(NetworkError);
     });
   });
 

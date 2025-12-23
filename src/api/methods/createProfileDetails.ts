@@ -20,12 +20,6 @@ const createProfileDetailsResponseSchema = z.object({
 
 export type ProfileDetailsResponse = z.infer<typeof createProfileDetailsResponseSchema>;
 
-export const createProfileDetails = async (
-  profileDetails: ProfileDetailsInput
-) => {
-  return await api.post(
-    "profile-details",
-    profileDetails,
-    createProfileDetailsResponseSchema
-  )
+export const createProfileDetails = async (profileDetails: ProfileDetailsInput) => {
+  return await api.post("profile-details", profileDetails, createProfileDetailsResponseSchema);
 };

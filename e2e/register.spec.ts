@@ -14,7 +14,6 @@ test.describe("Register Page", () => {
   });
 
   test("should show validation errors for empty required fields", async ({ page }) => {
-    
     await page.getByLabel("First Name").focus();
     await page.getByLabel("Last Name").focus();
     await page.getByLabel("Phone Number").focus();
@@ -22,7 +21,6 @@ test.describe("Register Page", () => {
     await page.getByRole("button", { name: "Submit" }).focus();
 
     await expect(page.getByText("Required").first()).toBeVisible();
-
   });
 
   test("should accept valid input in form fields", async ({ page }) => {
@@ -57,4 +55,3 @@ test.describe("Register Page", () => {
     await expect(page.getByText("Must be 9 digits")).toBeVisible();
   });
 });
-

@@ -115,11 +115,21 @@ export const api = {
     return request<T>("get", url, responseSchema, undefined, options);
   },
 
-  post: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
+  post: <T>(
+    url: string,
+    payload: unknown,
+    responseSchema: ZodType<T>,
+    options?: Options
+  ): Promise<T> => {
     return request<T>("post", url, responseSchema, payload, options);
   },
 
-  patch: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
+  patch: <T>(
+    url: string,
+    payload: unknown,
+    responseSchema: ZodType<T>,
+    options?: Options
+  ): Promise<T> => {
     return request<T>("patch", url, responseSchema, payload, options);
   },
 

@@ -62,16 +62,11 @@ describe("createProfileDetails", () => {
     it("throws HttpError on 400 Bad Request", async () => {
       server.use(
         http.post(`${BASE_URL}/profile-details`, () => {
-          return HttpResponse.json(
-            { message: "Invalid input data" },
-            { status: 400 }
-          );
+          return HttpResponse.json({ message: "Invalid input data" }, { status: 400 });
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        HttpError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(HttpError);
 
       try {
         await createProfileDetails(validProfileInput);
@@ -86,16 +81,11 @@ describe("createProfileDetails", () => {
     it("throws HttpError on 409 Conflict (duplicate)", async () => {
       server.use(
         http.post(`${BASE_URL}/profile-details`, () => {
-          return HttpResponse.json(
-            { message: "Profile already exists" },
-            { status: 409 }
-          );
+          return HttpResponse.json({ message: "Profile already exists" }, { status: 409 });
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        HttpError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(HttpError);
 
       try {
         await createProfileDetails(validProfileInput);
@@ -110,16 +100,11 @@ describe("createProfileDetails", () => {
     it("throws HttpError on 500 Internal Server Error", async () => {
       server.use(
         http.post(`${BASE_URL}/profile-details`, () => {
-          return HttpResponse.json(
-            { message: "Internal server error" },
-            { status: 500 }
-          );
+          return HttpResponse.json({ message: "Internal server error" }, { status: 500 });
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        HttpError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(HttpError);
 
       try {
         await createProfileDetails(validProfileInput);
@@ -143,18 +128,14 @@ describe("createProfileDetails", () => {
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        ValidationError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(ValidationError);
 
       try {
         await createProfileDetails(validProfileInput);
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
         const validationError = error as ValidationError;
-        expect(validationError.issues.some((i) => i.path === "lastName")).toBe(
-          true
-        );
+        expect(validationError.issues.some((i) => i.path === "lastName")).toBe(true);
       }
     });
 
@@ -170,9 +151,7 @@ describe("createProfileDetails", () => {
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        ValidationError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(ValidationError);
     });
 
     it("throws NetworkError on network failure", async () => {
@@ -182,9 +161,7 @@ describe("createProfileDetails", () => {
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(
-        NetworkError
-      );
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(NetworkError);
     });
   });
 
