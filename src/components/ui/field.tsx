@@ -241,10 +241,9 @@ interface FieldValidationStatusProps {
 
 function FieldValidationStatus({ fieldState, show = true, className }: FieldValidationStatusProps) {
   if (!show) return null;
-
   const status = (() => {
     if (fieldState.isValidating) return "validating" as const;
-    if (!fieldState.invalid && !fieldState.error) return "valid" as const;
+    if (!fieldState.invalid && !fieldState.error && fieldState.isTouched) return "valid" as const;
     if (fieldState.invalid || fieldState.error) return "invalid" as const;
     return null;
   })();
