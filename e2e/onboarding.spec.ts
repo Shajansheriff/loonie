@@ -81,7 +81,6 @@ test.describe("Onboarding Page", () => {
 
     test("should advance to step 2 after successful profile submission", async ({ page }) => {
       
-
       await page.getByLabel("First Name").fill("John");
       await page.getByLabel("Last Name").fill("Doe");
       await page.getByLabel("Phone Number").fill("+14376073435");

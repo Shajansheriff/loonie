@@ -68,7 +68,7 @@ async function request(
   schema: undefined,
   payload: unknown,
   options?: Options
-): Promise<void>;
+): Promise<undefined>;
 
 // Implementation
 async function request<T>(
@@ -77,7 +77,7 @@ async function request<T>(
   schema: ZodType<T> | undefined,
   payload: unknown,
   options?: Options
-): Promise<T | void> {
+): Promise<T | undefined> {
   try {
     const res = await client[method](url, {
       ...options,
@@ -146,7 +146,7 @@ export const api = {
     return request<T>("post", url, responseSchema, payload, options);
   },
 
-  postVoid: (url: string, payload: unknown, options?: Options): Promise<void> => {
+  postVoid: (url: string, payload: unknown, options?: Options): Promise<undefined> => {
     return request("post", url, undefined, payload, options);
   },
 

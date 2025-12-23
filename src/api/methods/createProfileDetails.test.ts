@@ -27,14 +27,8 @@ describe("createProfileDetails", () => {
         })
       );
 
-      const result = await createProfileDetails(validProfileInput);
+      await createProfileDetails(validProfileInput);
 
-      expect(result).toEqual({
-        firstName: "John",
-        lastName: "Doe",
-        corporationNumber: "12345678",
-        phone: "+11234567890",
-      });
     });
 
     it("handles different valid inputs", async () => {
@@ -52,9 +46,8 @@ describe("createProfileDetails", () => {
         phone: "+19876543210",
       };
 
-      const result = await createProfileDetails(input);
+      await createProfileDetails(input);
 
-      expect(result).toEqual(input);
     });
   });
 

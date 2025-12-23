@@ -7,6 +7,7 @@ export interface ProfileDetailsInput {
   phone: string;
 }
 
-export const createProfileDetails = async (profileDetails: ProfileDetailsInput): Promise<void> => {
+export const createProfileDetails = async (profileDetails: ProfileDetailsInput): Promise<undefined> => {
   await api.postVoid("profile-details", profileDetails);
+  return;
 };
