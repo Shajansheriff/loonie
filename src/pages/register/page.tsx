@@ -43,7 +43,7 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
         },
         { message: "Invalid corporation number" }
       ),
-    phone: z.string().regex(/^\+1\d{10}$/, "Invalid format"),
+    phone: z.string().min(1, "Required").regex(/^\+1\d{10}$/, "Invalid format"),
   });
 
 export default function RegisterPage() {
