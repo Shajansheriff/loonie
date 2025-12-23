@@ -56,6 +56,7 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
         corporationNumber: "",
         phone: "",
       },
+      mode: "onBlur",
     })
 
 
