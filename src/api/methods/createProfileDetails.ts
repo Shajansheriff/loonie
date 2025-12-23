@@ -1,5 +1,6 @@
 import z from "zod/v4";
 import { api } from "../client";
+
 export interface ProfileDetailsInput {
   firstName: string;
   lastName: string;
@@ -19,8 +20,12 @@ const createProfileDetailsResponseSchema = z.object({
 
 export type ProfileDetailsResponse = z.infer<typeof createProfileDetailsResponseSchema>;
 
-export const createProfileDetails = (
+export const createProfileDetails = async (
   profileDetails: ProfileDetailsInput
-): Promise<ProfileDetailsResponse> => {
-  return api.post("profile-details", profileDetails, createProfileDetailsResponseSchema);
+) => {
+  return await api.post(
+    "profile-details",
+    profileDetails,
+    createProfileDetailsResponseSchema
+  )
 };

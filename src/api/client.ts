@@ -111,19 +111,19 @@ async function request<T>(
 }
 
 export const api = {
-  get: <T>(url: string, responseSchema: ZodType<T>, options?: Options) => {
+  get: <T>(url: string, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
     return request<T>("get", url, responseSchema, undefined, options);
   },
 
-  post: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options) => {
+  post: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
     return request<T>("post", url, responseSchema, payload, options);
   },
 
-  patch: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options) => {
+  patch: <T>(url: string, payload: unknown, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
     return request<T>("patch", url, responseSchema, payload, options);
   },
 
-  delete: <T>(url: string, responseSchema: ZodType<T>, options?: Options) => {
+  delete: <T>(url: string, responseSchema: ZodType<T>, options?: Options): Promise<T> => {
     return request<T>("delete", url, responseSchema, undefined, options);
   },
 };

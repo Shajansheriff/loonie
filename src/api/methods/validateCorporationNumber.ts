@@ -10,10 +10,10 @@ export type ValidateCorporationNumberResponse = z.infer<
   typeof validateCorporationNumberResponseSchema
 >;
 
-export const validateCorporationNumber = (
+export const validateCorporationNumber = async (
   corporationNumber: string
 ): Promise<ValidateCorporationNumberResponse> => {
-  return api.get(
+  return await api.get(
     `corporation-number/${corporationNumber}`,
     validateCorporationNumberResponseSchema
   );
