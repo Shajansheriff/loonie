@@ -286,18 +286,14 @@ describe("RegisterPage", () => {
       corporationNumber: "123456789",
       valid: true,
     });
+
+    // Create a deferred promise we can resolve manually to simulate a API call delay
+    let resolveSubmit!: (value: ProfileDetailsResponse) => void;
     const submitPromise = new Promise<ProfileDetailsResponse>((resolve) => {
-      // wait for 200ms before resolving to simulate a API call delay
-      setTimeout(() => {
-        resolve({
-          firstName: "John",
-          lastName: "Doe",
-          corporationNumber: "123456789",
-          phone: "+11234567890",
-        });
-      }, 200);
+      resolveSubmit = resolve;
     });
     mockedCreateProfileDetails.mockImplementation(() => submitPromise);
+
     const user = userEvent.setup();
     renderWithProviders(<RegisterPage />);
 
@@ -312,10 +308,20 @@ describe("RegisterPage", () => {
     const submitButton = getSubmitButton();
     await user.click(submitButton);
 
+    // Button should be disabled while submitting
     await waitFor(() => {
       expect(submitButton).toBeDisabled();
     });
 
+    // Resolve the promise to simulate the API call completing
+    resolveSubmit({
+      firstName: "John",
+      lastName: "Doe",
+      corporationNumber: "123456789",
+      phone: "+11234567890",
+    });
+
+    // Button should be enabled after submission completes
     await waitFor(() => {
       expect(submitButton).not.toBeDisabled();
     });
