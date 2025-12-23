@@ -308,7 +308,7 @@ describe("OnboardingPage", () => {
       });
 
       // Create a deferred promise we can resolve manually to simulate a API call delay
-      let resolveSubmit!: (value: PromiseLike<undefined> | undefined) => void
+      let resolveSubmit!: (value: PromiseLike<undefined> | undefined) => void;
       const submitPromise = new Promise<undefined>((resolve) => {
         resolveSubmit = resolve;
       });
