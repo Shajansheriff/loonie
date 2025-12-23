@@ -30,13 +30,13 @@
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-error-boundary": "^6.0.0",
     "react-hook-form": "^7.69.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "lighthouse": "^12.0.0",
     "@eslint/js": "^9.39.1",
     "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.9.1",
@@ -55,6 +55,7 @@
     "eslint-plugin-react-x": "^2.3.13",
     "globals": "^16.5.0",
     "jsdom": "^27.3.0",
+    "lighthouse": "^12.0.0",
     "msw": "^2.12.4",
     "prettier": "^3.7.4",
     "shadcn": "^3.6.2",
