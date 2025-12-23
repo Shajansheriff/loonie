@@ -90,7 +90,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main role="main" className="w-full max-w-md">
+    <main role="main" className="w-full max-w-md mx-auto p-4 md:p-0">
       <StepIndicator steps={STEPS} currentStep={currentStep} />
 
       {currentStep === 1 && (
