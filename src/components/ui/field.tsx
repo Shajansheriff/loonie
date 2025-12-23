@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2Icon, CheckCircleIcon, CircleAlertIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -238,6 +239,41 @@ function FieldError({
   )
 }
 
+type FieldValidationStatusProps = {
+  isValidating?: boolean
+  isValid?: boolean
+  isInvalid?: boolean
+  show?: boolean
+  className?: string
+}
+
+function FieldValidationStatus({
+  isValidating,
+  isValid,
+  isInvalid,
+  show = true,
+  className,
+}: FieldValidationStatusProps) {
+  if (!show) return null
+
+  return (
+    <div
+      data-slot="field-validation-status"
+      className={cn("absolute right-3 top-1/2 -translate-y-1/2", className)}
+    >
+      {isValidating && (
+        <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
+      )}
+      {!isValidating && isValid && (
+        <CheckCircleIcon className="h-4 w-4 text-green-500" />
+      )}
+      {!isValidating && isInvalid && (
+        <CircleAlertIcon className="h-4 w-4 text-destructive" />
+      )}
+    </div>
+  )
+}
+
 export {
   Field,
   FieldLabel,
@@ -249,4 +285,5 @@ export {
   FieldSet,
   FieldContent,
   FieldTitle,
+  FieldValidationStatus,
 }

@@ -4,21 +4,51 @@ import {
     FieldError,
     FieldGroup,
     FieldLabel,
+    FieldValidationStatus,
   } from "@/components/ui/field"
   import { Input } from "@/components/ui/input"
   import { z } from "zod"
   import { Controller, useForm } from "react-hook-form"
   import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "@/components/ui/button"
-  
-  const registerFormSchema = z.object({
+import { useCreateProfileDetails } from "@/queries/useCreateProfileDetails"
+import { useQueryClient } from "@tanstack/react-query"
+import { validateCorporationNumberQueryOptions } from "@/queries/useValidateCorporationNumber"
+const CORPORATION_NUMBER_LENGTH = 9
+const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${CORPORATION_NUMBER_LENGTH}}$`)
+
+const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>) => z.object({
     firstName: z.string().min(1, "Required").max(50, "Max 50 characters"),
     lastName: z.string().min(1, "Required").max(50, "Max 50 characters"),
-    corporationNumber: z.string().min(1, "Required").regex(/^\d{8}$/, "Must be 8 digits"),
+    corporationNumber: z
+      .string()
+      .min(1, "Required")
+      .regex(CORPORATION_NUMBER_REGEX, `Must be ${CORPORATION_NUMBER_LENGTH} digits`)
+      .refine(
+        async (value) => {
+          if (!CORPORATION_NUMBER_REGEX.test(value)) { 
+            return true
+          }
+          
+          try {
+          const result = await queryClient.fetchQuery(validateCorporationNumberQueryOptions(value))
+            return result.valid
+          } catch {
+            // Treat API errors to make the field invalid
+            return false
+          }
+        },
+        { message: "Invalid corporation number" }
+      ),
     phone: z.string().regex(/^\+1\d{10}$/, "Invalid format"),
 })
+
   export default function RegisterPage() {
-    const { control, handleSubmit } = useForm<z.infer<typeof registerFormSchema>>({
+    const queryClient = useQueryClient()
+    const registerFormSchema = createRegisterFormSchema(queryClient)
+    
+    const { mutateAsync } = useCreateProfileDetails()
+    const { control, handleSubmit, formState } = useForm<z.infer<typeof registerFormSchema>>({
       resolver: zodResolver(registerFormSchema),
       defaultValues: {
         firstName: "",
@@ -27,12 +57,18 @@ import { Button } from "@/components/ui/button"
         phone: "",
       },
     })
-    const onSubmit = (data: z.infer<typeof registerFormSchema>) => {
-      console.log(data)
-    }
+
+
     return (
       <div className="w-full max-w-md">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(async (data) => {
+          try {
+            const result = await mutateAsync(data)
+            console.log(result)
+          } catch (error) {
+            console.error(error)
+          }
+        })}>
         <FieldGroup className="gap-1">
             <div className="grid grid-cols-2 gap-4">
                 <Controller
@@ -64,7 +100,7 @@ import { Button } from "@/components/ui/button"
                 render={({ field, fieldState }) => (
                     <Field>
               <FieldLabel htmlFor={field.name}>Phone Number</FieldLabel>
-              <Input {...field} id={field.name} aria-invalid={fieldState.invalid} type="text" placeholder="+1234567890" />
+              <Input {...field} id={field.name} aria-invalid={fieldState.invalid} type="text"  />
               <FieldError errors={[fieldState.error]} />
             </Field>
             )}
@@ -75,23 +111,30 @@ import { Button } from "@/components/ui/button"
                 render={({ field, fieldState }) => (
                     <Field>
               <FieldLabel htmlFor={field.name}>Corporation Number</FieldLabel>
-              <Input
-                {...field}
-                id={field.name}
-                aria-invalid={fieldState.invalid}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="12345678"
-                onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
-              />
+              <div className="relative">
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+                />
+                <FieldValidationStatus
+                  show={fieldState.isDirty}
+                  isValidating={fieldState.isValidating}
+                  isValid={!fieldState.error}
+                  isInvalid={!!fieldState.error}
+                />
+              </div>
               <FieldError errors={[fieldState.error]} />
             </Field>
             )}
             /> 
             <div className="grid">
 
-<Button type="submit">Submit <ArrowRightIcon /></Button>
+<Button type="submit" disabled={formState.isSubmitting}>Submit <ArrowRightIcon /></Button>
     </div>
             </FieldGroup>
             
@@ -99,4 +142,3 @@ import { Button } from "@/components/ui/button"
       </div>
     )
   }
-  
