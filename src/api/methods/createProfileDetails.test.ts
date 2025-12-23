@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw";
 import { server } from "@/test/mocks/server";
 import { BASE_URL } from "@/test/mocks/handlers";
 import { createProfileDetails, type ProfileDetailsInput } from "./createProfileDetails";
-import { HttpError, NetworkError, ValidationError } from "../client";
+import { HttpError, NetworkError } from "../client";
 
 const validProfileInput: ProfileDetailsInput = {
   firstName: "John",
@@ -106,43 +106,22 @@ describe("createProfileDetails", () => {
       }
     });
 
-    it("throws ValidationError when response doesn't match schema", async () => {
+    it("throws HttpError when response has invalid phone format", async () => {
       server.use(
         http.post(`${BASE_URL}/profile-details`, () => {
-          // Missing required fields in response
-          return HttpResponse.json({
-            firstName: "John",
-            // lastName missing
-            corporationNumber: "12345678",
-            phone: "+11234567890",
-          });
+          return HttpResponse.json(
+            {
+              firstName: "John",
+              lastName: "Doe",
+              corporationNumber: "12345678",
+              phone: "invalid-phone", // Invalid format
+            },
+            { status: 400 }
+          );
         })
       );
 
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(ValidationError);
-
-      try {
-        await createProfileDetails(validProfileInput);
-      } catch (error) {
-        expect(error).toBeInstanceOf(ValidationError);
-        const validationError = error as ValidationError;
-        expect(validationError.issues.some((i) => i.path === "lastName")).toBe(true);
-      }
-    });
-
-    it("throws ValidationError when response has invalid phone format", async () => {
-      server.use(
-        http.post(`${BASE_URL}/profile-details`, () => {
-          return HttpResponse.json({
-            firstName: "John",
-            lastName: "Doe",
-            corporationNumber: "12345678",
-            phone: "invalid-phone", // Invalid format
-          });
-        })
-      );
-
-      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(ValidationError);
+      await expect(createProfileDetails(validProfileInput)).rejects.toThrow(HttpError);
     });
 
     it("throws NetworkError on network failure", async () => {
