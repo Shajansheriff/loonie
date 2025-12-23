@@ -14,8 +14,8 @@ import { Button } from "@/components/ui/button"
 import { useCreateProfileDetails } from "@/queries/useCreateProfileDetails"
 import { useQueryClient } from "@tanstack/react-query"
 import { validateCorporationNumberQueryOptions } from "@/queries/useValidateCorporationNumber"
-const CORPORATION_NUMBER_LENGTH = 9
-const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${CORPORATION_NUMBER_LENGTH}}$`)
+const CORPORATION_NUMBER_LENGTH = 9;
+const CORPORATION_NUMBER_REGEX = new RegExp(`^\\d{${String(CORPORATION_NUMBER_LENGTH)}}$`);
 
 const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>) => z.object({
     firstName: z.string().min(1, "Required").max(50, "Max 50 characters"),
@@ -23,7 +23,7 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
     corporationNumber: z
       .string()
       .min(1, "Required")
-      .regex(CORPORATION_NUMBER_REGEX, `Must be ${CORPORATION_NUMBER_LENGTH} digits`)
+      .regex(CORPORATION_NUMBER_REGEX, `Must be ${String(CORPORATION_NUMBER_LENGTH)} digits`)
       .refine(
         async (value) => {
           if (!CORPORATION_NUMBER_REGEX.test(value)) { 
@@ -62,14 +62,16 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
 
     return (
       <div className="w-full max-w-md">
-        <form onSubmit={handleSubmit(async (data) => {
-          try {
-            const result = await mutateAsync(data)
-            console.log(result)
-          } catch (error) {
-            console.error(error)
-          }
-        })}>
+        <form onSubmit={(e) => {
+          void handleSubmit(async (data) => {
+            try {
+              const result = await mutateAsync(data)
+              console.log(result)
+            } catch (error) {
+              console.error(error)
+            }
+          })(e);
+        }}>
         <FieldGroup className="gap-1">
             <div className="grid grid-cols-2 gap-4">
                 <Controller
@@ -120,7 +122,7 @@ const createRegisterFormSchema = (queryClient: ReturnType<typeof useQueryClient>
                   type="text"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ""))}
+                  onChange={(e) => { field.onChange(e.target.value.replace(/\D/g, "")); }}
                 />
                 <FieldValidationStatus
                   show={fieldState.isDirty}

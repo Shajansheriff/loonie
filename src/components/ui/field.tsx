@@ -189,7 +189,7 @@ function FieldError({
   reserveSpace = true,
   ...props
 }: React.ComponentProps<"div"> & {
-  errors?: Array<{ message?: string } | undefined>
+  errors?: ({ message?: string } | undefined)[]
   reserveSpace?: boolean
 }) {
   const content = useMemo(() => {
@@ -205,15 +205,15 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
 
-    if (uniqueErrors?.length == 1) {
+    if (uniqueErrors.length === 1) {
       return uniqueErrors[0]?.message
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>
+          (error) =>
+            error?.message && <li key={error.message}>{error.message}</li>
         )}
       </ul>
     )
@@ -234,12 +234,12 @@ function FieldError({
       )}
       {...props}
     >
-      {content || "\u00A0"}
+      {content ?? "\u00A0"}
     </div>
   )
 }
 
-type FieldValidationStatusProps = {
+interface FieldValidationStatusProps {
   isValidating?: boolean
   isValid?: boolean
   isInvalid?: boolean

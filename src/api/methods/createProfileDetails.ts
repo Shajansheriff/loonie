@@ -1,11 +1,11 @@
 import z from "zod/v4"
 import { api } from "../client"
-export type ProfileDetailsInput = {
+export interface ProfileDetailsInput {
   firstName: string;
   lastName: string;
   corporationNumber: string;
   phone: string;
-};
+}
 
 const createProfileDetailsResponseSchema = z.object({
   firstName: z.string().min(1, "Required").max(50, "Max 50 characters"),

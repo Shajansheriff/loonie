@@ -28,10 +28,10 @@ export class HttpError {
 
 export class ValidationError {
   readonly _tag = "ValidationError" as const;
-  readonly issues: Array<{ path: string; message: string }>;
+  readonly issues: { path: string; message: string }[];
   readonly cause?: unknown;
 
-  constructor(issues: Array<{ path: string; message: string }>, cause?: unknown) {
+  constructor(issues: { path: string; message: string }[], cause?: unknown) {
     this.issues = issues;
     this.cause = cause;
   }
@@ -50,7 +50,7 @@ export class UnknownError {
 
 export type ApiError = NetworkError | HttpError | ValidationError | UnknownError;
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:3000";
 
 const client = ky.create({
   prefixUrl: BASE_URL,
