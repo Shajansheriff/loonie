@@ -234,22 +234,18 @@ interface FieldValidationStatusProps {
     isDirty: boolean;
     isValidating: boolean;
     error?: unknown;
-};
+  };
   show?: boolean;
   className?: string;
 }
 
-function FieldValidationStatus({
-  fieldState,
-  show = true,
-  className,
-}: FieldValidationStatusProps) {
+function FieldValidationStatus({ fieldState, show = true, className }: FieldValidationStatusProps) {
   if (!show) return null;
 
   const status = (() => {
     if (fieldState.isValidating) return "validating" as const;
-    if ( !fieldState.invalid && !fieldState.error) return "valid" as const;
-    if ( fieldState.invalid || fieldState.error) return "invalid" as const;
+    if (!fieldState.invalid && !fieldState.error) return "valid" as const;
+    if (fieldState.invalid || fieldState.error) return "invalid" as const;
     return null;
   })();
 

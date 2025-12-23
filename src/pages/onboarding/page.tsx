@@ -73,7 +73,7 @@ export default function OnboardingPage() {
   return (
     <main role="main" className="w-full max-w-md">
       <form
-      className="grid gap-4"
+        className="grid gap-4"
         onSubmit={(e) => {
           void handleSubmit(async (data) => {
             clearErrors("root");
@@ -156,10 +156,7 @@ export default function OnboardingPage() {
                       field.onChange(e.target.value.replace(/\D/g, ""));
                     }}
                   />
-                  <FieldValidationStatus
-                    show={fieldState.isDirty}
-                    fieldState={fieldState}
-                  />
+                  <FieldValidationStatus show={fieldState.isDirty} fieldState={fieldState} />
                 </div>
                 <FieldError errors={[fieldState.error]} />
               </Field>
@@ -167,11 +164,11 @@ export default function OnboardingPage() {
           />
         </FieldGroup>
         <FormError className="-mt-4">{formState.errors.root?.message}</FormError>
-          <div className="grid">
-            <Button type="submit" disabled={formState.isSubmitting}>
-              Submit <ArrowRightIcon />
-            </Button>
-          </div>
+        <div className="grid">
+          <Button type="submit" disabled={formState.isSubmitting}>
+            Submit <ArrowRightIcon />
+          </Button>
+        </div>
       </form>
     </main>
   );

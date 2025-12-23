@@ -58,7 +58,6 @@ test.describe("Onboarding Page", () => {
   });
 
   test("should display backend error message when submission fails with 400", async ({ page }) => {
-    
     await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
       await route.fulfill({
         status: 200,
@@ -67,7 +66,6 @@ test.describe("Onboarding Page", () => {
       });
     });
 
-    
     await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
       await route.fulfill({
         status: 400,
@@ -76,7 +74,6 @@ test.describe("Onboarding Page", () => {
       });
     });
 
-    
     await page.getByLabel("First Name").fill("John");
     await page.getByLabel("Last Name").fill("Doe");
     await page.getByLabel("Phone Number").fill("+11234567890");
@@ -86,15 +83,12 @@ test.describe("Onboarding Page", () => {
     // Wait for async validation to complete (checkmark appears)
     await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
 
-    
     await page.getByRole("button", { name: "Submit" }).click();
 
-    
     await expect(page.getByRole("alert").filter({ hasText: "Invalid phone number" })).toBeVisible();
   });
 
   test("should submit form successfully with valid data", async ({ page }) => {
-    
     await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
       await route.fulfill({
         status: 200,
@@ -122,12 +116,8 @@ test.describe("Onboarding Page", () => {
     await page.getByLabel("Corporation Number").fill("123456789");
     await page.getByLabel("First Name").focus(); // blur corporation number to trigger validation
 
-    
-    await expect(
-      page.locator("[data-slot='field-validation-status-valid']")
-    ).toBeVisible();
+    await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
 
-    
     await page.getByRole("button", { name: "Submit" }).click();
 
     await expect(page.getByRole("alert")).toBeHidden();
@@ -136,7 +126,6 @@ test.describe("Onboarding Page", () => {
   test("should show validation indicator for corporation number during async validation", async ({
     page,
   }) => {
-    
     await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
       await route.fulfill({
@@ -146,18 +135,13 @@ test.describe("Onboarding Page", () => {
       });
     });
 
-    
     await page.getByLabel("Corporation Number").fill("123456789");
     await page.getByLabel("First Name").focus(); // blur to trigger validation
 
-    
-    await expect(
-      page.locator("[data-slot='field-validation-status-validating']")
-    ).toBeVisible();
+    await expect(page.locator("[data-slot='field-validation-status-validating']")).toBeVisible();
 
-    
-    await expect(
-      page.locator("[data-slot='field-validation-status-valid']")
-    ).toBeVisible({ timeout: 3000 });
+    await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible({
+      timeout: 3000,
+    });
   });
 });
