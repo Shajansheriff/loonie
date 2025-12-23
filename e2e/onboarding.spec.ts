@@ -62,26 +62,11 @@ test.describe("Onboarding Page", () => {
     test("should display backend error message when submission fails with 400", async ({
       page,
     }) => {
-      await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
-        });
-      });
-
-      await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
-        await route.fulfill({
-          status: 400,
-          contentType: "application/json",
-          body: JSON.stringify({ message: "Invalid phone number" }),
-        });
-      });
-
+      
       await page.getByLabel("First Name").fill("John");
       await page.getByLabel("Last Name").fill("Doe");
-      await page.getByLabel("Phone Number").fill("+11234567890");
-      await page.getByLabel("Corporation Number").fill("123456789");
+      await page.getByLabel("Phone Number").fill("+12345678901");
+      await page.getByLabel("Corporation Number").fill("826417395");
       await page.getByLabel("First Name").focus(); // blur corporation number to trigger validation
 
       // Wait for async validation to complete (checkmark appears)
@@ -94,27 +79,13 @@ test.describe("Onboarding Page", () => {
       ).toBeVisible();
     });
 
-    test.skip("should advance to step 2 after successful profile submission", async ({ page }) => {
-      await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
-        });
-      });
-
-      await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({}),
-        });
-      });
+    test("should advance to step 2 after successful profile submission", async ({ page }) => {
+      
 
       await page.getByLabel("First Name").fill("John");
       await page.getByLabel("Last Name").fill("Doe");
-      await page.getByLabel("Phone Number").fill("+11234567890");
-      await page.getByLabel("Corporation Number").fill("123456789");
+      await page.getByLabel("Phone Number").fill("+14376073435");
+      await page.getByLabel("Corporation Number").fill("826417395");
       await page.getByLabel("First Name").focus(); // blur corporation number to trigger validation
 
       await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
@@ -149,115 +120,5 @@ test.describe("Onboarding Page", () => {
     });
   });
 
-  test.describe.skip("Step 2: Business Details Form", () => {
-    test.beforeEach(async ({ page }) => {
-      // Setup mocks and advance to step 2
-      await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
-        });
-      });
 
-      await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({}),
-        });
-      });
-
-      await page.getByLabel("First Name").fill("John");
-      await page.getByLabel("Last Name").fill("Doe");
-      await page.getByLabel("Phone Number").fill("+11234567890");
-      await page.getByLabel("Corporation Number").fill("123456789");
-      await page.getByLabel("First Name").focus();
-      await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page.getByText("Step 2: Business Details")).toBeVisible();
-    });
-
-    test("should display business details form fields", async ({ page }) => {
-      await expect(page.getByLabel("Business Name")).toBeVisible();
-      await expect(page.getByLabel("First Registered Tax Year")).toBeVisible();
-      await expect(page.getByText("Revenue Range")).toBeVisible();
-      await expect(page.getByRole("button", { name: "Continue" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
-    });
-
-    test("should navigate back to step 1", async ({ page }) => {
-      await page.getByRole("button", { name: "Back" }).click();
-
-      await expect(page.getByText("Step 1: Profile")).toBeVisible();
-      await expect(page.getByLabel("First Name")).toHaveValue("John");
-    });
-
-    test("should advance to step 3 after filling business details", async ({ page }) => {
-      await page.getByLabel("Business Name").fill("Acme Inc.");
-      await page.getByLabel("First Registered Tax Year").fill("2020");
-      await page.getByRole("combobox").click();
-      await page.getByRole("option", { name: "$100K - $500K" }).click();
-
-      await page.getByRole("button", { name: "Continue" }).click();
-
-      await expect(page.getByText("Step 3: Complete")).toBeVisible();
-      await expect(page.getByText("Congratulations!")).toBeVisible();
-    });
-  });
-
-  test.describe.skip("Step 3: Finished Form", () => {
-    test.beforeEach(async ({ page }) => {
-      // Setup mocks and advance to step 3
-      await page.route(`${API_BASE_URL}/corporation-number/*`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({ corporationNumber: "123456789", valid: true }),
-        });
-      });
-
-      await page.route(`${API_BASE_URL}/profile-details`, async (route) => {
-        await route.fulfill({
-          status: 200,
-          contentType: "application/json",
-          body: JSON.stringify({}),
-        });
-      });
-
-      // Step 1
-      await page.getByLabel("First Name").fill("John");
-      await page.getByLabel("Last Name").fill("Doe");
-      await page.getByLabel("Phone Number").fill("+11234567890");
-      await page.getByLabel("Corporation Number").fill("123456789");
-      await page.getByLabel("First Name").focus();
-      await expect(page.locator("[data-slot='field-validation-status-valid']")).toBeVisible();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page.getByText("Step 2: Business Details")).toBeVisible();
-
-      // Step 2
-      await page.getByLabel("Business Name").fill("Acme Inc.");
-      await page.getByLabel("First Registered Tax Year").fill("2020");
-      await page.getByRole("combobox").click();
-      await page.getByRole("option", { name: "$100K - $500K" }).click();
-      await page.getByRole("button", { name: "Continue" }).click();
-      await expect(page.getByText("Congratulations!")).toBeVisible();
-    });
-
-    test("should display completion message", async ({ page }) => {
-      await expect(page.getByText("Congratulations!")).toBeVisible();
-      await expect(
-        page.getByText("You have successfully completed the onboarding process.")
-      ).toBeVisible();
-      await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
-      await expect(page.getByRole("button", { name: "Go to dashboard" })).toBeVisible();
-    });
-
-    test("should navigate back to step 2", async ({ page }) => {
-      await page.getByRole("button", { name: "Back" }).click();
-
-      await expect(page.getByText("Step 2: Business Details")).toBeVisible();
-      await expect(page.getByLabel("Business Name")).toHaveValue("Acme Inc.");
-    });
-  });
 });
