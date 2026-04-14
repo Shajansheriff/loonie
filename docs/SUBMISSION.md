@@ -1,6 +1,6 @@
 # Submission Checklist
 
-This document maps the take-home task requirements to the implementation.
+This document maps the task requirements to the implementation.
 
 **Live demo**: [loonie.shajahan.me](http://loonie.shajahan.me)
 
